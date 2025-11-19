@@ -10,7 +10,7 @@ from datetime import datetime
 scope = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive"]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name("sacred-courier-427312-d9-c0159b3e486e.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("test.json", scope)
 client = gspread.authorize(creds)
 
 spreadsheet = client.open("User Study Ranked Examples")
