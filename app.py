@@ -84,19 +84,47 @@ def show_example():
         # 6. Decision buttons
         # ------------------------------
         col1, col2, col3 = st.columns(3)
+        # with col1:
+        #     if st.button("Support"):
+        #         results_sheet.append_row([
+        #             user_id,
+        #             current_example_id,
+        #             example_row['claim'],
+        #             st.session_state.sentences_shown,
+        #             "support",
+        #             str(datetime.now())
+        #         ])
+        #         st.session_state.current_index += 1
+        #         st.session_state.sentences_shown = 0
+        #         st.session_state.shown_sentences = []
+        # with col2:
+        #     if st.button("Refute"):
+        #         results_sheet.append_row([
+        #             user_id,
+        #             current_example_id,
+        #             example_row['claim'],
+        #             st.session_state.sentences_shown,
+        #             "refute",
+        #             str(datetime.now())
+        #         ])
+        #         st.session_state.current_index += 1
+        #         st.session_state.sentences_shown = 0
+        #         st.session_state.shown_sentences = []
+        # with col3:
+        #     if st.button("Can't Decide"):
+        #         results_sheet.append_row([
+        #             user_id,
+        #             current_example_id,
+        #             example_row['claim'],
+        #             st.session_state.sentences_shown,
+        #             "cannot_decide",
+        #             str(datetime.now())
+        #         ])
+        #         st.session_state.current_index += 1
+        #         st.session_state.sentences_shown = 0
+        #         st.session_state.shown_sentences = []
         with col1:
             if st.button("Support"):
-                # results_sheet.append_row([
-                #     user_id,
-                #     current_example_id,
-                #     example_row['claim'],
-                #     st.session_state.sentences_shown,
-                #     "support",
-                #     str(datetime.now())
-                # ])
-                # st.session_state.current_index += 1
-                # st.session_state.sentences_shown = 0
-                # st.session_state.shown_sentences = []
                 results_sheet.append_row([
                     user_id,
                     current_example_id,
@@ -106,21 +134,13 @@ def show_example():
                     str(datetime.now())
                 ])
                 st.session_state.current_index += 1
-                st.session_state.current_sentences = []  # reset for next example
+                st.session_state.current_sentences = []
+                st.session_state.shown_sentences = []
+                st.session_state.sentences_shown = 0
+                st.experimental_rerun()
 
         with col2:
             if st.button("Refute"):
-                # results_sheet.append_row([
-                #     user_id,
-                #     current_example_id,
-                #     example_row['claim'],
-                #     st.session_state.sentences_shown,
-                #     "refute",
-                #     str(datetime.now())
-                # ])
-                # st.session_state.current_index += 1
-                # st.session_state.sentences_shown = 0
-                # st.session_state.shown_sentences = []
                 results_sheet.append_row([
                     user_id,
                     current_example_id,
@@ -130,20 +150,13 @@ def show_example():
                     str(datetime.now())
                 ])
                 st.session_state.current_index += 1
-                st.session_state.current_sentences = []  # reset for next example
+                st.session_state.current_sentences = []
+                st.session_state.shown_sentences = []
+                st.session_state.sentences_shown = 0
+                st.experimental_rerun()
+
         with col3:
             if st.button("Can't Decide"):
-                # results_sheet.append_row([
-                #     user_id,
-                #     current_example_id,
-                #     example_row['claim'],
-                #     st.session_state.sentences_shown,
-                #     "cannot_decide",
-                #     str(datetime.now())
-                # ])
-                # st.session_state.current_index += 1
-                # st.session_state.sentences_shown = 0
-                # st.session_state.shown_sentences = []
                 results_sheet.append_row([
                     user_id,
                     current_example_id,
@@ -153,7 +166,10 @@ def show_example():
                     str(datetime.now())
                 ])
                 st.session_state.current_index += 1
-                st.session_state.current_sentences = []  # reset for next example
+                st.session_state.current_sentences = []
+                st.session_state.shown_sentences = []
+                st.session_state.sentences_shown = 0
+                st.experimental_rerun()
 
 
 if user_id:
