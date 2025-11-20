@@ -79,6 +79,8 @@ def show_example():
 
     # Display all sentences shown so far
     for idx, s in enumerate(st.session_state.shown_sentences, start=1):
+        if idx == 1:
+            st.write("### Evidence Sentences:")
         st.write(f"{idx}. {s}")
 
     # ------------------------------
