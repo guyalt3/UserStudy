@@ -1,3 +1,5 @@
+import json
+
 import streamlit as st
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -10,7 +12,15 @@ from datetime import datetime
 scope = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive"]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name("test.json", scope)
+# creds = ServiceAccountCredentials.from_json_keyfile_name("test.json", scope)
+# client = gspread.authorize(creds)
+
+# Load credentials from Streamlit secrets
+# (Streamlit will provide st.secrets["gcp_service_account"] as a dict when deployed)
+gcp_json = json.dumps(st.secrets["gcp_service_account"])
+creds_dict = json.loads(gcp_json)
+
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 
 spreadsheet = client.open("User Study Ranked Examples")
