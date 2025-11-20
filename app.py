@@ -17,10 +17,13 @@ scope = ["https://spreadsheets.google.com/feeds",
 
 # Load credentials from Streamlit secrets
 # (Streamlit will provide st.secrets["gcp_service_account"] as a dict when deployed)
-gcp_json = json.dumps(st.secrets["gcp_service_account"])
-creds_dict = json.loads(gcp_json)
+service_account_info = st.secrets["gcp_service_account"]
 
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_dict(
+    service_account_info,
+    scope
+)
+
 client = gspread.authorize(creds)
 
 spreadsheet = client.open("User Study Ranked Examples")
