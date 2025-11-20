@@ -23,12 +23,11 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(
 client = gspread.authorize(creds)
 time.sleep(1)
 
-# Load all data once
+# Load all data once at startup
 spreadsheet = client.open("User Study Ranked Examples")
 examples_df = pd.DataFrame(spreadsheet.worksheet("examples").get_all_records())
 assignments_df = pd.DataFrame(spreadsheet.worksheet("assignments").get_all_records())
-# results_sheet will be used only at the end
-results_sheet = spreadsheet.worksheet("results")
+results_sheet = spreadsheet.worksheet("results")  # only used at the end
 
 # ------------------------------
 # 2. User login
@@ -46,11 +45,24 @@ if 'user_answers' not in st.session_state:
     st.session_state.user_answers = []
 
 # ------------------------------
-# 3. Show example
+# 3. Prepare user examples once
+# ------------------------------
+if user_id:
+    user_row = assignments_df[assignments_df['user_id'] == user_id]
+    if user_row.empty:
+        st.write("User not found.")
+    else:
+        example_ids_str = user_row.iloc[0]['example_ids'].strip("[]")
+        example_ids = [x.strip() for x in example_ids_str.split(",")]
+        if 'example_ids' not in st.session_state:
+            st.session_state.example_ids = example_ids
+
+# ------------------------------
+# 4. Show example
 # ------------------------------
 def show_example():
-    current_example_id = example_ids[st.session_state.current_index]
-    example_row = examples_df[examples_df['example_id'] == int(current_example_id)].iloc[0]
+    current_example_id = int(st.session_state.example_ids[st.session_state.current_index])
+    example_row = examples_df[examples_df['example_id'] == current_example_id].iloc[0]
 
     st.write("### Claim:")
     st.write(example_row['claim'])
@@ -60,7 +72,7 @@ def show_example():
                  if f'sentence_{i}' in example_row and example_row[f'sentence_{i}']]
 
     # Show next sentence button
-    if st.button("Next sentence"):
+    if st.button("Next sentence", key=f"next_{current_example_id}"):
         if st.session_state.sentences_shown < len(sentences):
             next_sentence = sentences[st.session_state.sentences_shown]
             st.session_state.shown_sentences.append(next_sentence)
@@ -74,94 +86,66 @@ def show_example():
     # Decision buttons
     # ------------------------------
     col1, col2, col3 = st.columns(3)
+
+    def save_answer(decision):
+        st.session_state.user_answers.append({
+            'user_id': user_id,
+            'example_id': current_example_id,
+            'claim': example_row['claim'],
+            'sentences_shown': st.session_state.sentences_shown,
+            'decision': decision,
+            'timestamp': str(datetime.now())
+        })
+        st.session_state.current_index += 1
+        st.session_state.sentences_shown = 0
+        st.session_state.shown_sentences = []
+
     with col1:
-        if st.button("Support"):
-            st.session_state.user_answers.append({
-                'user_id': user_id,
-                'example_id': current_example_id,
-                'claim': example_row['claim'],
-                'sentences_shown': st.session_state.sentences_shown,
-                'decision': 'support',
-                'timestamp': str(datetime.now())
-            })
-            st.session_state.current_index += 1
-            st.session_state.sentences_shown = 0
-            st.session_state.shown_sentences = []
+        if st.button("Support", key=f"support_{current_example_id}"):
+            save_answer('support')
     with col2:
-        if st.button("Refute"):
-            st.session_state.user_answers.append({
-                'user_id': user_id,
-                'example_id': current_example_id,
-                'claim': example_row['claim'],
-                'sentences_shown': st.session_state.sentences_shown,
-                'decision': 'refute',
-                'timestamp': str(datetime.now())
-            })
-            st.session_state.current_index += 1
-            st.session_state.sentences_shown = 0
-            st.session_state.shown_sentences = []
+        if st.button("Refute", key=f"refute_{current_example_id}"):
+            save_answer('refute')
     with col3:
-        if st.button("Can't Decide"):
-            st.session_state.user_answers.append({
-                'user_id': user_id,
-                'example_id': current_example_id,
-                'claim': example_row['claim'],
-                'sentences_shown': st.session_state.sentences_shown,
-                'decision': 'cannot_decide',
-                'timestamp': str(datetime.now())
-            })
-            st.session_state.current_index += 1
-            st.session_state.sentences_shown = 0
-            st.session_state.shown_sentences = []
+        if st.button("Can't Decide", key=f"cannot_decide_{current_example_id}"):
+            save_answer('cannot_decide')
 
 # ------------------------------
-# 4. Main app logic
+# 5. Main app logic
 # ------------------------------
-if user_id:
+if user_id and 'example_ids' in st.session_state:
     st.write("### Instructions")
     st.write("""
-    You will see a claim and a set of evidence sentences.  
-    Click **Next sentence** to reveal the evidence one by one.  
+    Click **Next sentence** to reveal the evidence one by one.
     When you feel you have enough information, choose:
 
-    - **Support** — if the evidence supports the claim  
-    - **Refute** — if the evidence contradicts the claim  
-    - **Can't Decide** — if the evidence is unclear or insufficient  
+    - **Support**
+    - **Refute**
+    - **Can't Decide**
     """)
 
-    # Load assigned examples for the user
-    user_row = assignments_df[assignments_df['user_id'] == user_id]
-    if user_row.empty:
-        st.write("User not found.")
+    if st.session_state.current_index < len(st.session_state.example_ids):
+        show_example()
     else:
-        example_ids_str = user_row.iloc[0]['example_ids']  # e.g., "[35695,52186,...]"
-        example_ids_str = example_ids_str.strip("[]")
-        example_ids = [x.strip() for x in example_ids_str.split(",")]
+        st.write("🎉 You have completed all examples.")
 
-        # Show current example
-        if st.session_state.current_index < len(example_ids):
-            show_example()
-        else:
-            st.write("🎉 You have completed all examples.")
-
-    # ------------------------------
-    # 5. Finish session button
-    # ------------------------------
-    if st.session_state.user_answers:
-        if st.button("Finish Session"):
-            # Prepare all rows at once
-            rows_to_append = [
-                [
-                    ans['user_id'],
-                    ans['example_id'],
-                    ans['claim'],
-                    ans['sentences_shown'],
-                    ans['decision'],
-                    ans['timestamp']
-                ]
-                for ans in st.session_state.user_answers
+# ------------------------------
+# 6. Finish session button
+# ------------------------------
+if st.session_state.user_answers:
+    if st.button("Finish Session"):
+        # Append all answers in one API call
+        rows_to_append = [
+            [
+                ans['user_id'],
+                ans['example_id'],
+                ans['claim'],
+                ans['sentences_shown'],
+                ans['decision'],
+                ans['timestamp']
             ]
-            # Append all rows in one API call
-            results_sheet.append_rows(rows_to_append)
-            st.success("All answers saved successfully!")
-            st.session_state.user_answers = []  # clear after saving
+            for ans in st.session_state.user_answers
+        ]
+        results_sheet.append_rows(rows_to_append)
+        st.success("All answers saved successfully!")
+        st.session_state.user_answers = []
