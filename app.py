@@ -117,12 +117,28 @@ def show_example():
 if user_id and 'example_ids' in st.session_state:
     st.write("### Instructions")
     st.write("""
-    Click **Next sentence** to reveal the evidence one by one.
-    When you feel you have enough information, choose:
+    **Your task:**  
+    You will be shown a *claim*. Your goal is to decide whether the claim is **supported**, **refuted**, or **cannot be decided** based on evidence sentences that you request.
 
-    - **Support**
-    - **Refute**
-    - **Can't Decide**
+    **How the task works (step-by-step):**
+    1. You start by seeing the **claim only**.  
+    2. Click **Next sentence** to reveal evidence - one sentence at a time.  
+       - Each click of **Next sentence** reveals the next evidence sentence (they appear in order).  
+    3. You may read as many evidence sentences as you want. Stop when you feel you have enough information to decide.
+
+    **Decision options (choose one when you stop):**
+    - **Support** - choose this **only if the evidence you have seen fully supports the entire claim**.  
+    - **Refute** - choose this if **any evidence sentence you saw directly contradicts the claim**.  
+    - **Can't Decide** - choose this if, after reading evidence, **you still cannot support or refute the claim** or the evidence is **insufficient**.
+
+    **Important note about navigation (how examples advance):**
+    - After you click **Support**, **Refute**, or **Can't Decide**, your answer for the current example is recorded and the app advances internally to the next example.  
+    - **However**, the next example’s *claim* will not appear automatically on screen — to load the next example you must click **Next sentence**.  
+      - The first click of **Next sentence** after a decision will **display the next example’s claim** (no evidence shown yet).  
+      - Clicking **Next sentence** again will reveal the **first evidence sentence** for that new example, and further clicks reveal subsequent evidence sentences.  
+
+    **Saving your work:**
+    - When you finish all assigned examples, click **Finish Session** to save all your recorded answers.
     """)
 
     if st.session_state.current_index < len(st.session_state.example_ids):
