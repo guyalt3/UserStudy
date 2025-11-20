@@ -67,7 +67,7 @@ def show_example():
         # ------------------------------
         # 6. Decision buttons
         # ------------------------------
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("Support"):
                 results_sheet.append_row([
@@ -90,6 +90,19 @@ def show_example():
                     example_row['claim'],
                     st.session_state.sentences_shown,
                     "refute",
+                    str(datetime.now())
+                ])
+                st.session_state.current_index += 1
+                st.session_state.sentences_shown = 0
+                st.session_state.shown_sentences = []
+        with col3:
+            if st.button("Can't Decide"):
+                results_sheet.append_row([
+                    user_id,
+                    current_example_id,
+                    example_row['claim'],
+                    st.session_state.sentences_shown,
+                    "cannot_decide",
                     str(datetime.now())
                 ])
                 st.session_state.current_index += 1
