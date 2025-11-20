@@ -28,7 +28,20 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(
 
 client = gspread.authorize(creds)
 
-spreadsheet = client.open("User Study Ranked Examples")
+
+def safe_open(client, name, retries=3, delay=1):
+    for attempt in range(retries):
+        try:
+            return client.open(name)
+        except gspread.exceptions.APIError:
+            if attempt < retries - 1:
+                time.sleep(delay)
+            else:
+                raise
+
+
+# spreadsheet = client.open("User Study Ranked Examples")
+spreadsheet = safe_open(client, "User Study Ranked Examples")
 examples_sheet = spreadsheet.worksheet("examples")
 assignments_sheet = spreadsheet.worksheet("assignments")
 results_sheet = spreadsheet.worksheet("results")
