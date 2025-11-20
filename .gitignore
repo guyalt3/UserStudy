@@ -1,0 +1,8 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+# Google service account file
+test.json
+*.json
