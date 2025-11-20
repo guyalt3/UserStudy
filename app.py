@@ -27,6 +27,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(
 )
 
 client = gspread.authorize(creds)
+time.sleep(1)
 
 
 def safe_open(client, name, retries=3, delay=1):
@@ -40,11 +41,27 @@ def safe_open(client, name, retries=3, delay=1):
                 raise
 
 
+def safe_worksheet(sheet, name, retries=5, delay=1):
+    """Get a worksheet safely with retries."""
+    for attempt in range(retries):
+        try:
+            return sheet.worksheet(name)
+        except gspread.exceptions.APIError:
+            if attempt < retries - 1:
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+
+
 # spreadsheet = client.open("User Study Ranked Examples")
+# examples_sheet = spreadsheet.worksheet("examples")
+# assignments_sheet = spreadsheet.worksheet("assignments")
+# results_sheet = spreadsheet.worksheet("results")
 spreadsheet = safe_open(client, "User Study Ranked Examples")
-examples_sheet = spreadsheet.worksheet("examples")
-assignments_sheet = spreadsheet.worksheet("assignments")
-results_sheet = spreadsheet.worksheet("results")
+examples_sheet = safe_worksheet(spreadsheet, "examples")
+assignments_sheet = safe_worksheet(spreadsheet, "assignments")
+results_sheet = safe_worksheet(spreadsheet, "results")
 
 # ------------------------------
 # 2. User login
