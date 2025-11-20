@@ -17,8 +17,8 @@ service_account_info = st.secrets["gcp_service_account"]
 
 if 'gs_client' not in st.session_state:
     creds = ServiceAccountCredentials.from_json_keyfile_dict(
-        service_account_info,
-        scope
+        st.secrets["gcp_service_account"],
+        ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     )
     st.session_state.gs_client = gspread.authorize(creds)
     time.sleep(1)
@@ -55,6 +55,7 @@ if user_id:
         if 'example_ids' not in st.session_state:
             st.session_state.example_ids = example_ids
 
+
 # ------------------------------
 # 4. Show example
 # ------------------------------
@@ -62,26 +63,23 @@ def show_example():
     current_example_id = int(st.session_state.example_ids[st.session_state.current_index])
     example_row = st.session_state.examples_df[st.session_state.examples_df['example_id'] == current_example_id].iloc[0]
 
-    # Show claim
     st.write("### Claim:")
-    st.info(example_row['claim'])
+    st.write(example_row['claim'])
 
     # Get list of sentences
     sentences = [example_row[f'sentence_{i}'] for i in range(1, 51)
                  if f'sentence_{i}' in example_row and example_row[f'sentence_{i}']]
 
-    # Show evidence sentences
-    if st.session_state.shown_sentences:
-        st.write("### Evidence Sentences:")
-        for idx, s in enumerate(st.session_state.shown_sentences, 1):
-            st.write(f"{idx}. {s}")
-
-    # Next sentence button under evidence
-    if st.session_state.sentences_shown < len(sentences):
-        if st.button("Next sentence", key=f"next_{current_example_id}"):
+    # Show next sentence button
+    if st.button("Next sentence", key=f"next_{current_example_id}"):
+        if st.session_state.sentences_shown < len(sentences):
             next_sentence = sentences[st.session_state.sentences_shown]
             st.session_state.shown_sentences.append(next_sentence)
             st.session_state.sentences_shown += 1
+
+    # Display all sentences shown so far
+    for idx, s in enumerate(st.session_state.shown_sentences, start=1):
+        st.write(f"{idx}. {s}")
 
     # ------------------------------
     # Decision buttons
@@ -102,13 +100,13 @@ def show_example():
         st.session_state.shown_sentences = []
 
     with col1:
-        if st.button("Support ✅", key=f"support_{current_example_id}"):
+        if st.button("Support", key=f"support_{current_example_id}"):
             save_answer('support')
     with col2:
-        if st.button("Refute ❌", key=f"refute_{current_example_id}"):
+        if st.button("Refute", key=f"refute_{current_example_id}"):
             save_answer('refute')
     with col3:
-        if st.button("Can't Decide ⚠️", key=f"cannot_decide_{current_example_id}"):
+        if st.button("Can't Decide", key=f"cannot_decide_{current_example_id}"):
             save_answer('cannot_decide')
 
 # ------------------------------
@@ -134,7 +132,7 @@ if user_id and 'example_ids' in st.session_state:
 # 6. Finish session button
 # ------------------------------
 if st.session_state.user_answers:
-    if st.button("💾 Finish Session and Save All Answers"):
+    if st.button("Finish Session"):
         # Append all answers in one API call
         rows_to_append = [
             [
