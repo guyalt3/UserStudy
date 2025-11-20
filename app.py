@@ -70,16 +70,16 @@ def show_example():
     sentences = [example_row[f'sentence_{i}'] for i in range(1, 51)
                  if f'sentence_{i}' in example_row and example_row[f'sentence_{i}']]
 
+    # Display all sentences shown so far
+    for idx, s in enumerate(st.session_state.shown_sentences, start=1):
+        st.write(f"{idx}. {s}")
+
     # Show next sentence button
     if st.button("Next sentence", key=f"next_{current_example_id}"):
         if st.session_state.sentences_shown < len(sentences):
             next_sentence = sentences[st.session_state.sentences_shown]
             st.session_state.shown_sentences.append(next_sentence)
             st.session_state.sentences_shown += 1
-
-    # Display all sentences shown so far
-    for idx, s in enumerate(st.session_state.shown_sentences, start=1):
-        st.write(f"{idx}. {s}")
 
     # ------------------------------
     # Decision buttons
