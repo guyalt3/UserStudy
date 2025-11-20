@@ -1,7 +1,9 @@
 import json
+import time
 
 import streamlit as st
 import gspread
+from gspread.exceptions import APIError
 from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from datetime import datetime
@@ -37,6 +39,19 @@ results_sheet = spreadsheet.worksheet("results")
 user_id = st.text_input("Enter your user ID (e.g., user_1):")
 
 
+def safe_append(sheet, row, retries=3, delay=1):
+    """Try to append a row, retrying on APIError."""
+    for attempt in range(retries):
+        try:
+            sheet.append_row(row)
+            return
+        except APIError:
+            if attempt < retries - 1:
+                time.sleep(delay)
+            else:
+                raise
+
+
 def show_example():
     # ------------------------------
     # 5. Show current example
@@ -70,7 +85,18 @@ def show_example():
         col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("Support"):
-                results_sheet.append_row([
+                # results_sheet.append_row([
+                #     user_id,
+                #     current_example_id,
+                #     example_row['claim'],
+                #     st.session_state.sentences_shown,
+                #     "support",
+                #     str(datetime.now())
+                # ])
+                # st.session_state.current_index += 1
+                # st.session_state.sentences_shown = 0
+                # st.session_state.shown_sentences = []
+                safe_append(results_sheet, [
                     user_id,
                     current_example_id,
                     example_row['claim'],
@@ -81,9 +107,21 @@ def show_example():
                 st.session_state.current_index += 1
                 st.session_state.sentences_shown = 0
                 st.session_state.shown_sentences = []
+                st.experimental_rerun()
         with col2:
             if st.button("Refute"):
-                results_sheet.append_row([
+                # results_sheet.append_row([
+                #     user_id,
+                #     current_example_id,
+                #     example_row['claim'],
+                #     st.session_state.sentences_shown,
+                #     "refute",
+                #     str(datetime.now())
+                # ])
+                # st.session_state.current_index += 1
+                # st.session_state.sentences_shown = 0
+                # st.session_state.shown_sentences = []
+                safe_append(results_sheet, [
                     user_id,
                     current_example_id,
                     example_row['claim'],
@@ -94,9 +132,21 @@ def show_example():
                 st.session_state.current_index += 1
                 st.session_state.sentences_shown = 0
                 st.session_state.shown_sentences = []
+                st.experimental_rerun()
         with col3:
             if st.button("Can't Decide"):
-                results_sheet.append_row([
+                # results_sheet.append_row([
+                #     user_id,
+                #     current_example_id,
+                #     example_row['claim'],
+                #     st.session_state.sentences_shown,
+                #     "cannot_decide",
+                #     str(datetime.now())
+                # ])
+                # st.session_state.current_index += 1
+                # st.session_state.sentences_shown = 0
+                # st.session_state.shown_sentences = []
+                safe_append(results_sheet, [
                     user_id,
                     current_example_id,
                     example_row['claim'],
@@ -107,6 +157,7 @@ def show_example():
                 st.session_state.current_index += 1
                 st.session_state.sentences_shown = 0
                 st.session_state.shown_sentences = []
+                st.experimental_rerun()
 
 
 if user_id:
