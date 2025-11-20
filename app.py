@@ -15,19 +15,17 @@ scope = ["https://spreadsheets.google.com/feeds",
 
 service_account_info = st.secrets["gcp_service_account"]
 
-creds = ServiceAccountCredentials.from_json_keyfile_dict(
-    service_account_info,
-    scope
-)
-
-client = gspread.authorize(creds)
-time.sleep(1)
-
-# Load all data once at startup
-spreadsheet = client.open("User Study Ranked Examples")
-examples_df = pd.DataFrame(spreadsheet.worksheet("examples").get_all_records())
-assignments_df = pd.DataFrame(spreadsheet.worksheet("assignments").get_all_records())
-results_sheet = spreadsheet.worksheet("results")  # only used at the end
+if 'gs_client' not in st.session_state:
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(
+        st.secrets["gcp_service_account"],
+        ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    )
+    st.session_state.gs_client = gspread.authorize(creds)
+    time.sleep(1)
+    spreadsheet = st.session_state.gs_client.open("User Study Ranked Examples")
+    st.session_state.examples_df = pd.DataFrame(spreadsheet.worksheet("examples").get_all_records())
+    st.session_state.assignments_df = pd.DataFrame(spreadsheet.worksheet("assignments").get_all_records())
+    st.session_state.results_sheet = spreadsheet.worksheet("results")
 
 # ------------------------------
 # 2. User login
@@ -48,7 +46,7 @@ if 'user_answers' not in st.session_state:
 # 3. Prepare user examples once
 # ------------------------------
 if user_id:
-    user_row = assignments_df[assignments_df['user_id'] == user_id]
+    user_row = st.session_state.assignments_df[st.session_state.assignments_df['user_id'] == user_id]
     if user_row.empty:
         st.write("User not found.")
     else:
@@ -62,7 +60,7 @@ if user_id:
 # ------------------------------
 def show_example():
     current_example_id = int(st.session_state.example_ids[st.session_state.current_index])
-    example_row = examples_df[examples_df['example_id'] == current_example_id].iloc[0]
+    example_row = st.session_state.examples_df[st.session_state.examples_df['example_id'] == current_example_id].iloc[0]
 
     st.write("### Claim:")
     st.write(example_row['claim'])
@@ -146,6 +144,6 @@ if st.session_state.user_answers:
             ]
             for ans in st.session_state.user_answers
         ]
-        results_sheet.append_rows(rows_to_append)
+        st.session_state.results_sheet.append_rows(rows_to_append)
         st.success("All answers saved successfully!")
         st.session_state.user_answers = []
