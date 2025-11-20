@@ -49,30 +49,14 @@ def show_example():
         st.write("### Claim:")
         st.write(example_row['claim'])
 
-        # # Get list of sentences
-        # sentences = [example_row[f'sentence_{i}'] for i in range(1, 51)
-        #              if f'sentence_{i}' in example_row and example_row[f'sentence_{i}']]
+        # Get list of sentences
+        sentences = [example_row[f'sentence_{i}'] for i in range(1, 51)
+                     if f'sentence_{i}' in example_row and example_row[f'sentence_{i}']]
 
-        if 'current_sentences' not in st.session_state or st.session_state.get(
-                'current_example_id') != current_example_id:
-            st.session_state.current_sentences = [
-                example_row[f'sentence_{i}'] for i in range(1, 51)
-                if f'sentence_{i}' in example_row and example_row[f'sentence_{i}']
-            ]
-            st.session_state.shown_sentences = []  # reset shown sentences
-            st.session_state.sentences_shown = 0
-            st.session_state.current_example_id = current_example_id
-
-        # # Show next sentence button
-        # if st.button("Next sentence"):
-        #     if st.session_state.sentences_shown < len(sentences):
-        #         next_sentence = sentences[st.session_state.sentences_shown]
-        #         st.session_state.shown_sentences.append(next_sentence)
-        #         st.session_state.sentences_shown += 1
-
+        # Show next sentence button
         if st.button("Next sentence"):
-            if st.session_state.sentences_shown < len(st.session_state.current_sentences):
-                next_sentence = st.session_state.current_sentences[st.session_state.sentences_shown]
+            if st.session_state.sentences_shown < len(sentences):
+                next_sentence = sentences[st.session_state.sentences_shown]
                 st.session_state.shown_sentences.append(next_sentence)
                 st.session_state.sentences_shown += 1
 
@@ -84,45 +68,6 @@ def show_example():
         # 6. Decision buttons
         # ------------------------------
         col1, col2, col3 = st.columns(3)
-        # with col1:
-        #     if st.button("Support"):
-        #         results_sheet.append_row([
-        #             user_id,
-        #             current_example_id,
-        #             example_row['claim'],
-        #             st.session_state.sentences_shown,
-        #             "support",
-        #             str(datetime.now())
-        #         ])
-        #         st.session_state.current_index += 1
-        #         st.session_state.sentences_shown = 0
-        #         st.session_state.shown_sentences = []
-        # with col2:
-        #     if st.button("Refute"):
-        #         results_sheet.append_row([
-        #             user_id,
-        #             current_example_id,
-        #             example_row['claim'],
-        #             st.session_state.sentences_shown,
-        #             "refute",
-        #             str(datetime.now())
-        #         ])
-        #         st.session_state.current_index += 1
-        #         st.session_state.sentences_shown = 0
-        #         st.session_state.shown_sentences = []
-        # with col3:
-        #     if st.button("Can't Decide"):
-        #         results_sheet.append_row([
-        #             user_id,
-        #             current_example_id,
-        #             example_row['claim'],
-        #             st.session_state.sentences_shown,
-        #             "cannot_decide",
-        #             str(datetime.now())
-        #         ])
-        #         st.session_state.current_index += 1
-        #         st.session_state.sentences_shown = 0
-        #         st.session_state.shown_sentences = []
         with col1:
             if st.button("Support"):
                 results_sheet.append_row([
@@ -134,11 +79,8 @@ def show_example():
                     str(datetime.now())
                 ])
                 st.session_state.current_index += 1
-                st.session_state.current_sentences = []
-                st.session_state.shown_sentences = []
                 st.session_state.sentences_shown = 0
-                st.experimental_rerun()
-
+                st.session_state.shown_sentences = []
         with col2:
             if st.button("Refute"):
                 results_sheet.append_row([
@@ -150,11 +92,8 @@ def show_example():
                     str(datetime.now())
                 ])
                 st.session_state.current_index += 1
-                st.session_state.current_sentences = []
-                st.session_state.shown_sentences = []
                 st.session_state.sentences_shown = 0
-                st.experimental_rerun()
-
+                st.session_state.shown_sentences = []
         with col3:
             if st.button("Can't Decide"):
                 results_sheet.append_row([
@@ -166,10 +105,8 @@ def show_example():
                     str(datetime.now())
                 ])
                 st.session_state.current_index += 1
-                st.session_state.current_sentences = []
-                st.session_state.shown_sentences = []
                 st.session_state.sentences_shown = 0
-                st.experimental_rerun()
+                st.session_state.shown_sentences = []
 
 
 if user_id:
