@@ -111,6 +111,17 @@ def show_example():
 
 
 if user_id:
+    st.write("### Instructions")
+    st.write("""
+    You will see a claim and a set of evidence sentences.  
+    Click **Next sentence** to reveal the evidence one by one.  
+    When you feel you have enough information, choose:
+
+    - **Support** — if the evidence supports the claim  
+    - **Refute** — if the evidence contradicts the claim  
+    - **Can't Decide** — if the evidence is unclear or insufficient  
+    """)
+
     # ------------------------------
     # 3. Load assigned examples
     # ------------------------------
